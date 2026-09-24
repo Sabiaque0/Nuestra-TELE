@@ -3,306 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player TV Style</title>
-    <!-- Librería HLS.js -->
+    <title>IPTV Checker & Player</title>
+    <!-- Librería HLS.js para reproducción de streams M3U8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
-            --bg-main: #0f1015;
-            --bg-card: #1a1c23;
-            --bg-card-hover: #252836;
-            --accent: #00e5ff;
-            --accent-glow: rgba(0, 229, 255, 0.3);
-            --text-main: #ffffff;
-            --text-sub: #a0a5b5;
-            --success: #00e676;
-            --error: #ff5252;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #00adb5;
+            --text: #eeeeee;
+            --text-dim: #b0b0b0;
+            --success: #2ec4b6;
+            --error: #e63946;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            padding: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* --- SECCIÓN REPRODUCTOR --- */
-        .player-section {
-            background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            border: 1px solid #2a2d3d;
-        }
-
-        .video-container {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background-color: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .now-playing {
-            margin-top: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
+        h1, h2 {
+            margin: 0 0 10px 0;
             color: var(--accent);
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        /* --- SECCIÓN ENTRADA Y CONTROLES --- */
-        .input-section {
-            background-color: var(--bg-card);
-            border-radius: 16px;
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--card-bg);
             padding: 20px;
-            border: 1px solid #2a2d3d;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         textarea {
             width: 100%;
-            height: 100px;
-            background-color: #121319;
-            color: var(--text-main);
-            border: 2px solid #2a2d3d;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 0.95rem;
+            height: 150px;
+            background-color: #2a2a2a;
+            color: var(--text);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
             font-family: monospace;
-            resize: none;
-            outline: none;
+            resize: vertical;
         }
 
-        textarea:focus {
-            border-color: var(--accent);
-        }
-
-        .controls-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background-color: #121319;
-            padding: 12px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .toggle-container input {
-            width: 22px;
-            height: 22px;
-            accent-color: var(--accent);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-large {
-            flex: 1;
-            background: linear-gradient(135deg, #00b4db, #0083b0);
+        button {
+            background-color: var(--accent);
             color: #fff;
             border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: opacity 0.2s;
         }
 
-        .btn-clear {
-            background: rgba(255, 82, 82, 0.2);
-            color: var(--error);
-            border: 1px solid var(--error);
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
+        button:hover {
+            opacity: 0.9;
         }
 
-        .btn-large:active, .btn-clear:active {
-            transform: scale(0.98);
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
         }
 
-        .btn-large:disabled {
-            background: #2a2d3d;
-            color: var(--text-sub);
-            box-shadow: none;
-        }
-
-        .status-text {
-            font-size: 0.9rem;
-            color: var(--text-sub);
-            text-align: center;
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
             margin-top: 10px;
         }
 
-        /* --- REJILLA DE CANALES --- */
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text-main);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        label {
+            font-size: 0.9em;
+            color: var(--text-dim);
         }
 
-        .channels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            max-height: 450px;
+        input[type="checkbox"] {
+            accent-color: var(--accent);
+        }
+
+        video {
+            width: 100%;
+            max-height: 360px;
+            background-color: #000;
+            border-radius: 4px;
+        }
+
+        .status-bar {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+
+        .channel-list {
+            max-height: 400px;
             overflow-y: auto;
-            padding-right: 4px;
+            margin-top: 15px;
+            border: 1px solid #333;
+            border-radius: 4px;
         }
 
-        .channel-card {
-            background-color: var(--bg-card);
-            border: 2px solid #2a2d3d;
-            border-radius: 14px;
-            padding: 16px 10px;
+        .channel-item {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            min-height: 100px;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #2a2a2a;
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
+            transition: background 0.2s;
         }
 
-        .channel-card:hover, .channel-card:focus {
-            border-color: var(--accent);
-            background-color: var(--bg-card-hover);
-            box-shadow: 0 0 15px var(--accent-glow);
-            transform: translateY(-2px);
+        .channel-item:hover {
+            background-color: #2a2a2a;
         }
 
-        .channel-name {
-            font-size: 0.95rem;
-            font-weight: 600;
-            line-height: 1.2;
-            word-break: break-word;
-        }
-
-        .status-pill {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 20px;
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
-        .status-pill.online {
-            background-color: rgba(0, 230, 118, 0.15);
+        .badge.online {
+            background-color: rgba(46, 196, 182, 0.2);
             color: var(--success);
             border: 1px solid var(--success);
         }
 
-        .status-pill.offline {
-            background-color: rgba(255, 82, 82, 0.15);
+        .badge.offline {
+            background-color: rgba(230, 57, 70, 0.2);
             color: var(--error);
             border: 1px solid var(--error);
         }
 
-        .status-pill.checking {
+        .badge.checking {
             background-color: rgba(255, 255, 255, 0.1);
-            color: var(--text-sub);
+            color: var(--text-dim);
         }
     </style>
 </head>
 <body>
 
-    <!-- Reproductor Superior -->
-    <div class="player-section">
-        <div class="video-container">
+    <h1>Verificador y Reproductor IPTV</h1>
+
+    <div class="container">
+        <!-- Panel Izquierdo: Entrada de Lista y Verificación -->
+        <div class="panel">
+            <h2>1. Pega tu lista M3U / M3U8</h2>
+            <textarea id="playlistInput" placeholder="#EXTM3U&#10;#EXTINF:-1, Canal Ejemplo&#10;http://servidor.com/live/stream.m3u8"></textarea>
+            
+            <div class="controls">
+                <input type="checkbox" id="useCorsProxy">
+                <label for="useCorsProxy">Usar proxy CORS (Recomendado si falla la verificación)</label>
+            </div>
+
+            <button id="btnProcess" onclick="processPlaylist()">Cargar y Verificar Canales</button>
+            
+            <div class="status-bar" id="statusBar">Esperando lista...</div>
+
+            <h2>2. Canales Activos (Ordenados A-Z)</h2>
+            <div class="channel-list" id="channelList">
+                <div style="padding: 15px; text-align: center; color: var(--text-dim);">
+                    Carga una lista para mostrar los canales
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Reproductor -->
+        <div class="panel">
+            <h2>3. Reproductor</h2>
             <video id="videoPlayer" controls autoplay></video>
-        </div>
-        <div class="now-playing" id="currentChannelTitle">Selecciona un canal para reproducir</div>
-    </div>
-
-    <!-- Panel de Entrada de Lista -->
-    <div class="input-section">
-        <textarea id="playlistInput" placeholder="Pega tu lista M3U aquí..."></textarea>
-        
-        <div class="controls-bar">
-            <label class="toggle-container">
-                <input type="checkbox" id="useCorsProxy" checked>
-                <span>Usar proxy CORS (Recomendado)</span>
-            </label>
-
-            <div class="btn-group">
-                <button class="btn-large" id="btnProcess" onclick="processPlaylist()">Verificar Canales</button>
-                <button class="btn-clear" onclick="clearSavedPlaylist()">Borrar</button>
-            </div>
-        </div>
-        <div class="status-text" id="statusBar">Cargando...</div>
-    </div>
-
-    <!-- Rejilla de Canales -->
-    <div>
-        <div class="section-title">
-            <span>Canales Activos</span>
-            <span id="channelCount" style="font-size: 0.9rem; color: var(--text-sub);">0 canales</span>
-        </div>
-        <div class="channels-grid" id="channelGrid">
-            <div style="grid-column: 1/-1; text-align: center; color: var(--text-sub); padding: 30px;">
-                Carga tu lista para mostrar los canales
-            </div>
+            <h3 id="currentChannelTitle" style="margin-top: 15px; color: var(--text-dim);">Selecciona un canal para reproducir</h3>
         </div>
     </div>
 
     <script>
         let channels = [];
-        const corsProxy = "https://corsproxy.io/?";
-        const STORAGE_KEY = "iptv_saved_playlist";
+        const corsProxy = "https://corsproxy.io/?"; // Proxy público para evadir bloqueos CORS
 
-        // Cargar lista guardada al abrir la página/app
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedPlaylist = localStorage.getItem(STORAGE_KEY);
-            if (savedPlaylist) {
-                document.getElementById('playlistInput').value = savedPlaylist;
-                updateStatus("Lista guardada cargada automáticamente.");
-                processPlaylist(); // Procesa y verifica automáticamente
-            } else {
-                updateStatus("Esperando lista IPTV...");
-            }
-        });
-
+        // Parsear el texto M3U en un array de objetos { name, url }
         function parseM3U(content) {
             const lines = content.split('\n');
             const result = [];
@@ -320,67 +220,58 @@
                     result.push({
                         name: currentName,
                         url: line,
-                        status: 'checking'
+                        status: 'checking' // checking, online, offline
                     });
                     currentName = 'Canal sin nombre';
                 }
             }
 
+            // Ordenar alfabéticamente por nombre
             return result.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
         }
 
+        // Procesar e iniciar verificación
         async function processPlaylist() {
             const rawText = document.getElementById('playlistInput').value;
             if (!rawText.trim()) {
-                alert("Por favor pega una lista IPTV válida.");
+                alert("Por favor pega el contenido de una lista IPTV (.m3u)");
                 return;
             }
-
-            // Guardar en localStorage
-            localStorage.setItem(STORAGE_KEY, rawText);
 
             document.getElementById('btnProcess').disabled = true;
             channels = parseM3U(rawText);
             
-            document.getElementById('channelCount').innerText = `${channels.length} canales`;
-            renderGrid();
+            renderChannelList();
             
             const useProxy = document.getElementById('useCorsProxy').checked;
             let onlineCount = 0;
 
             for (let i = 0; i < channels.length; i++) {
-                updateStatus(`Verificando ${i + 1} / ${channels.length}...`);
+                updateStatus(`Verificando canal ${i + 1} de ${channels.length}...`);
                 const isWorking = await checkStreamUrl(channels[i].url, useProxy);
                 
                 channels[i].status = isWorking ? 'online' : 'offline';
                 if (isWorking) onlineCount++;
                 
-                renderGrid();
+                renderChannelList();
             }
 
-            updateStatus(`Listo. ${onlineCount} de ${channels.length} canales funcionando.`);
+            updateStatus(`Verificación completada. ${onlineCount} de ${channels.length} canales activos.`);
             document.getElementById('btnProcess').disabled = false;
         }
 
-        function clearSavedPlaylist() {
-            localStorage.removeItem(STORAGE_KEY);
-            document.getElementById('playlistInput').value = '';
-            channels = [];
-            renderGrid();
-            document.getElementById('channelCount').innerText = "0 canales";
-            updateStatus("Lista borrada.");
-        }
-
+        // Verificar si la URL responde
         async function checkStreamUrl(url, useProxy) {
             const targetUrl = useProxy ? corsProxy + encodeURIComponent(url) : url;
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos de timeout
 
             try {
+                // Se realiza una petición FETCH ligera (GET/HEAD)
                 const response = await fetch(targetUrl, {
                     method: 'GET',
                     signal: controller.signal,
-                    headers: { 'Range': 'bytes=0-100' }
+                    headers: { 'Range': 'bytes=0-100' } // Cargar solo los primeros bytes
                 });
                 clearTimeout(timeoutId);
                 return response.ok;
@@ -390,57 +281,62 @@
             }
         }
 
-        function renderGrid() {
-            const grid = document.getElementById('channelGrid');
-            grid.innerHTML = '';
+        // Actualizar la interfaz con la lista de canales
+        function renderChannelList() {
+            const listContainer = document.getElementById('channelList');
+            listContainer.innerHTML = '';
 
             if (channels.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-sub); padding: 30px;">No se encontraron canales.</div>';
+                listContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: var(--text-dim);">No se encontraron canales válidos.</div>';
                 return;
             }
 
-            channels.forEach((channel) => {
-                const card = document.createElement('div');
-                card.className = 'channel-card';
+            channels.forEach((channel, index) => {
+                const item = document.createElement('div');
+                item.className = 'channel-item';
                 
                 let badgeClass = channel.status;
-                let badgeText = channel.status === 'online' ? 'Activo' : (channel.status === 'offline' ? 'Caído' : '...');
+                let badgeText = channel.status === 'online' ? 'Activo' : (channel.status === 'offline' ? 'Caído' : 'Probando...');
 
-                card.innerHTML = `
-                    <div class="channel-name">${channel.name}</div>
-                    <span class="status-pill ${badgeClass}">${badgeText}</span>
+                item.innerHTML = `
+                    <span><strong>${channel.name}</strong></span>
+                    <span class="badge ${badgeClass}">${badgeText}</span>
                 `;
 
+                // Solo permitir clic si el canal está activo o en verificación
                 if (channel.status !== 'offline') {
-                    card.onclick = () => playStream(channel.url, channel.name);
-                } else {
-                    card.style.opacity = '0.5';
-                    card.style.cursor = 'not-allowed';
+                    item.onclick = () => playStream(channel.url, channel.name);
                 }
 
-                grid.appendChild(card);
+                listContainer.appendChild(item);
             });
         }
 
+        // Reproducir el flujo HLS
         function playStream(url, name) {
             const video = document.getElementById('videoPlayer');
             const title = document.getElementById('currentChannelTitle');
             
-            title.innerText = ` ▶ ${name}`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            title.innerText = `Reproduciendo: ${name}`;
 
             if (Hls.isSupported()) {
-                const hls = new Hls();
+                const hls = new Hls({
+                    manifestLoadingTimeOut: 10000,
+                    manifestLoadingMaxRetry: 2
+                });
                 hls.loadSource(url);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play().catch(() => {});
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Soporte nativo para Safari/iOS
                 video.src = url;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(() => {});
                 });
+            } else {
+                alert("Tu navegador no soporta la reproducción de flujos HLS (.m3u8).");
             }
         }
 
