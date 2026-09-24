@@ -36,7 +36,7 @@
             gap: 20px;
         }
 
-        /* --- SECCIÓN REPRODUCTOR --- */
+        /* --- SECCIÓN REPRODUCTOR (TOP) --- */
         .player-section {
             background-color: var(--bg-card);
             border-radius: 16px;
@@ -100,7 +100,7 @@
         .controls-bar {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
             margin-top: 15px;
         }
 
@@ -120,19 +120,13 @@
             accent-color: var(--accent);
         }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
         .btn-large {
-            flex: 1;
             background: linear-gradient(135deg, #00b4db, #0083b0);
             color: #fff;
             border: none;
             padding: 16px;
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -141,18 +135,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .btn-clear {
-            background: rgba(255, 82, 82, 0.2);
-            color: var(--error);
-            border: 1px solid var(--error);
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-large:active, .btn-clear:active {
+        .btn-large:active {
             transform: scale(0.98);
         }
 
@@ -166,10 +149,10 @@
             font-size: 0.9rem;
             color: var(--text-sub);
             text-align: center;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        /* --- REJILLA DE CANALES --- */
+        /* --- REJILLA DE CANALES ESTILO TV --- */
         .section-title {
             font-size: 1.3rem;
             font-weight: 700;
@@ -189,6 +172,7 @@
             padding-right: 4px;
         }
 
+        /* Estilo tarjeta de canal */
         .channel-card {
             background-color: var(--bg-card);
             border: 2px solid #2a2d3d;
@@ -203,6 +187,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
+            position: relative;
         }
 
         .channel-card:hover, .channel-card:focus {
@@ -219,6 +204,7 @@
             word-break: break-word;
         }
 
+        /* Estado indicator */
         .status-pill {
             font-size: 0.7rem;
             font-weight: 700;
@@ -265,15 +251,12 @@
                 <span>Usar proxy CORS (Recomendado)</span>
             </label>
 
-            <div class="btn-group">
-                <button class="btn-large" id="btnProcess" onclick="processPlaylist()">Verificar Canales</button>
-                <button class="btn-clear" onclick="clearSavedPlaylist()">Borrar</button>
-            </div>
+            <button class="btn-large" id="btnProcess" onclick="processPlaylist()">Verificar Canales</button>
         </div>
-        <div class="status-text" id="statusBar">Cargando...</div>
+        <div class="status-text" id="statusBar">Esperando lista IPTV...</div>
     </div>
 
-    <!-- Rejilla de Canales -->
+    <!-- Rejilla de Canales Estilo Smart TV -->
     <div>
         <div class="section-title">
             <span>Canales Activos</span>
@@ -281,7 +264,7 @@
         </div>
         <div class="channels-grid" id="channelGrid">
             <div style="grid-column: 1/-1; text-align: center; color: var(--text-sub); padding: 30px;">
-                Carga tu lista para mostrar los canales
+                Carga tu lista para mostrar las tarjetas de canales
             </div>
         </div>
     </div>
@@ -289,19 +272,6 @@
     <script>
         let channels = [];
         const corsProxy = "https://corsproxy.io/?";
-        const STORAGE_KEY = "iptv_saved_playlist";
-
-        // Cargar lista guardada al abrir la página/app
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedPlaylist = localStorage.getItem(STORAGE_KEY);
-            if (savedPlaylist) {
-                document.getElementById('playlistInput').value = savedPlaylist;
-                updateStatus("Lista guardada cargada automáticamente.");
-                processPlaylist(); // Procesa y verifica automáticamente
-            } else {
-                updateStatus("Esperando lista IPTV...");
-            }
-        });
 
         function parseM3U(content) {
             const lines = content.split('\n');
@@ -336,9 +306,6 @@
                 return;
             }
 
-            // Guardar en localStorage
-            localStorage.setItem(STORAGE_KEY, rawText);
-
             document.getElementById('btnProcess').disabled = true;
             channels = parseM3U(rawText);
             
@@ -360,15 +327,6 @@
 
             updateStatus(`Listo. ${onlineCount} de ${channels.length} canales funcionando.`);
             document.getElementById('btnProcess').disabled = false;
-        }
-
-        function clearSavedPlaylist() {
-            localStorage.removeItem(STORAGE_KEY);
-            document.getElementById('playlistInput').value = '';
-            channels = [];
-            renderGrid();
-            document.getElementById('channelCount').innerText = "0 canales";
-            updateStatus("Lista borrada.");
         }
 
         async function checkStreamUrl(url, useProxy) {
